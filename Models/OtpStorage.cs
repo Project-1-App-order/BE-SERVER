@@ -12,6 +12,7 @@ namespace api.Models
         public string? UserId { get; set; }
         public string? Otp { get; set; }
         public DateTime ExpiryTime { get; set; }
+        [ForeignKey("UserId")]
         public ApplicationUser? applicationUser { get; set; }
     }
 }
