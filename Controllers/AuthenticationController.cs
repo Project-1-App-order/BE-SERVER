@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using api.Responses;
 using Microsoft.AspNetCore.Identity;
 using api.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace api.Controllers
 {
@@ -51,6 +53,38 @@ namespace api.Controllers
             }
             return Ok(result.token);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changPasswordModel)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (userName == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "User not found" });
+            }
+            var user = _userManager.Users.FirstOrDefault(x => x.UserName == userName);
+            if (user == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "User not found" });
+            }
+
+            var isOldPasswordValid = await _userManager.CheckPasswordAsync(user, changPasswordModel.CurrentPassword);
+            if (!isOldPasswordValid)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "Old password is incorrect" });
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, changPasswordModel.CurrentPassword, changPasswordModel.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "failed" });
+            }
+
+            return StatusCode(StatusCodes.Status200OK, new { Status = "Sucessed", StatusMessage = "Change Password sucessfully" });
+        }
+
 
 
 
