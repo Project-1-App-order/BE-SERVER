@@ -123,6 +123,25 @@ namespace api.Controllers
             _mailService.SendEmail(message);
             return Ok($"OTP sent to email: {otp}");
         }
+        [HttpPost]
+        public async Task<IActionResult> VerifyOTP(string email, string otp)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "User not found, email does not exist" });
+            }
+            var exignOtp = await _context.OtpStorages.FirstOrDefaultAsync(o => o.Otp == otp && o.UserId == user.Id);
+            if (exignOtp == null)
+            {
+                return BadRequest();
+            }
+            if (exignOtp.ExpiryTime <= DateTime.UtcNow)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "OTP is expired" });
+            }
+            return StatusCode(StatusCodes.Status200OK, new { Status = "Success", StatusMessage = "OTP is valid" });
+        }
 
 
     }
