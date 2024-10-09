@@ -52,6 +52,48 @@ namespace api.Services.Functions
             }
 
         }
+        public JwtSecurityToken GetToken(List<Claim> authClaims)
+        {
+            var authSiginKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                expires: DateTime.Now.AddMonths(2),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSiginKey, SecurityAlgorithms.HmacSha256)
+            );
+            return token;
+        }
+        public async Task<ServiceResponse.LoginResponse> LoginAsync(LoginDTO request)
+        {
+            var existingUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
+            if (existingUser == null) return new ServiceResponse.LoginResponse(false, "User doesn't exist", null!);
+
+            var isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, request.Password);
+            if (!isPasswordValid) return new ServiceResponse.LoginResponse(false, "Invalid password", null!);
+
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, existingUser.Email!),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
+
+            var jwtToken = GetToken(authClaims);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+
+            var tokenDescriptor = new IdentityUserToken<string>
+            {
+                UserId = existingUser.Id,
+                LoginProvider = "JWT",
+                Name = "AccessToken",
+                Value = tokenString
+            };
+
+            await _userManager.SetAuthenticationTokenAsync(existingUser, tokenDescriptor.LoginProvider, tokenDescriptor.Name, tokenString);
+
+            return new ServiceResponse.LoginResponse(true, "Logined successfully", tokenString);
+        }
+
 
 
 

@@ -40,6 +40,19 @@ namespace api.Controllers
             });
         }
 
-       
+        [HttpPost]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        {
+            var result = await _authenticationService.LoginAsync(loginDTO);
+            if (result.Flag == false)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new Response { Status = "Error", StatusMessage = result.Message });
+            }
+            return Ok(result.token);
+        }
+
+
+
     }
 }
