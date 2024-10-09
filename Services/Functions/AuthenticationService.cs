@@ -94,6 +94,12 @@ namespace api.Services.Functions
             return new ServiceResponse.LoginResponse(true, "Logined successfully", tokenString);
         }
 
+        public string GenerateRandomOTP()
+        {
+            Random generator = new Random();
+            string otp = generator.Next(0, 999999).ToString("D6");
+            return otp;
+        }
 
 
 

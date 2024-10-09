@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using api.Services.MailServices;
 
 namespace api.Controllers
 {
@@ -17,11 +18,13 @@ namespace api.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        public AuthenticationController(IAuthenticationService authenticationService, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        private readonly IMailService _mailService;
+        public AuthenticationController(IAuthenticationService authenticationService, ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMailService mailService)
         {
              _authenticationService = authenticationService;
              _context = context;
              _userManager = userManager;
+            _mailService = mailService;
         }
 
         [HttpPost]
@@ -85,7 +88,41 @@ namespace api.Controllers
             return StatusCode(StatusCodes.Status200OK, new { Status = "Sucessed", StatusMessage = "Change Password sucessfully" });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SendOTP(string email)
+        {
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser != null)
+            {
+                var existingOtp = await _context.OtpStorages.FirstOrDefaultAsync(o => o.UserId == existingUser.Id);
+                if (existingOtp != null)
+                {
+                    _context.OtpStorages.Remove(existingOtp);
+                }
+            }
+            else
+            {
+                return NotFound("User not found");
+            }
 
+            string otp = _authenticationService.GenerateRandomOTP();
+            var otpRecord = new OtpStorage
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = existingUser.Id,
+                Otp = otp,
+                ExpiryTime = DateTime.UtcNow.AddMinutes(2)
+            };
+
+            _context.OtpStorages.Add(otpRecord);
+            await _context.SaveChangesAsync();
+
+            string body = $@"Your OTP is: {otp}. Note: this OTP will be out of time after 2 minutes";
+
+            var message = new Messages(new string[] { email }, "OTP Request", body);
+            _mailService.SendEmail(message);
+            return Ok($"OTP sent to email: {otp}");
+        }
 
 
     }

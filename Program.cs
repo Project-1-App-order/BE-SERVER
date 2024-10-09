@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using api.Models;
-//using api.Services.MailServices;
+using api.Services.MailServices;
 using MailKit;
 
 
@@ -70,7 +70,7 @@ builder.Services.AddSwaggerGen(options =>
 
 
 //add email configuration
-/*var emailConfiguration = configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
+var emailConfiguration = configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
 if (emailConfiguration == null)
 {
     // Handle missing configuration gracefully, log an error, or throw an exception.
@@ -78,7 +78,7 @@ if (emailConfiguration == null)
 }
 builder.Services.AddSingleton(emailConfiguration);
 builder.Services.AddHttpClient();
-*/
+
 
 /////
 ///
@@ -122,7 +122,7 @@ builder.Services.AddCors(options =>
 
 //resgister DI
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-//builder.Services.AddScoped<IMailService, MailService>();
+builder.Services.AddScoped<api.Services.MailServices.IMailService, api.Services.MailServices.MailService>();
 
 
 builder.Services.AddControllers()
