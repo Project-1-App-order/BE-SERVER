@@ -101,11 +101,13 @@ namespace api.Services.Functions
             return otp;
         }
 
-
-
-
-
-
+        public async Task RemoveExpiredOtps()
+        {
+            var currentTime = DateTime.UtcNow;
+            await _context.OtpStorages
+                .Where(o => o.ExpiryTime < currentTime)
+                .ExecuteDeleteAsync();
+        }
 
     }
 }

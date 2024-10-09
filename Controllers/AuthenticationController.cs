@@ -143,6 +143,35 @@ namespace api.Controllers
             return StatusCode(StatusCodes.Status200OK, new { Status = "Success", StatusMessage = "OTP is valid" });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetmodel)
+        {
+            var user = await _userManager.FindByEmailAsync(resetmodel.email);
+            if (user == null)
+                return NotFound("User not found");
+
+            await _authenticationService.RemoveExpiredOtps();
+
+            var otpRecord = await _context.OtpStorages.FirstOrDefaultAsync(o => o.UserId == user.Id && o.Otp == resetmodel.otp);
+            if (otpRecord == null)
+                return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "OTP not found" });
+            /*if (otpRecord.ExpiryTime <= DateTime.UtcNow)
+                return BadRequest("OTP has expired");
+*/
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, resetmodel.newPassword);
+
+            if (result.Succeeded)
+            {
+                // Remove the used OTP
+                _context.OtpStorages.Remove(otpRecord);
+                await _context.SaveChangesAsync();
+                return StatusCode(StatusCodes.Status200OK, new { Status = "Success", StatusMessage = "Password reset successfully" });
+            }
+            return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = result.Errors });
+        }
+
+
 
     }
 }
