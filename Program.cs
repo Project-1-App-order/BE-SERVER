@@ -82,11 +82,7 @@ builder.Services.AddHttpClient();
 
 /////
 ///
-/*builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddRoles<IdentityRole>()
-    .AddDefaultTokenProviders();*/
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -113,7 +109,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins("http://localhost:8080")
                 .AllowAnyMethod()
                 .AllowAnyHeader();
         });

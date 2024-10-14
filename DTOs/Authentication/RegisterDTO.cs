@@ -1,8 +1,15 @@
-﻿namespace api.DTOs.Authentication
+﻿using api.Validations;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
+
+namespace api.DTOs.Authentication
 {
     public class RegisterDTO
     {
-        public string? Email { get; set; }
-        public string? Password { get; set; }
+        [Required]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Email format is not valid")]
+        public required string Email { get; set; }
+        [PasswordStrength]
+        public required string Password { get; set; }
     }
 }

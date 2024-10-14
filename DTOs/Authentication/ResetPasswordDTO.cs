@@ -1,9 +1,12 @@
-﻿namespace api.DTOs.Authentication
+﻿using api.Validations;
+
+namespace api.DTOs.Authentication
 {
     public class ResetPasswordDTO
     {
-        public string email { get; set; }
-        public string otp { get; set; }
-        public string newPassword { get; set; }
+        public required string Email { get; set; }
+        public required string Otp { get; set; }
+        [PasswordStrength]
+        public required string NewPassword { get; set; }
     }
 }

@@ -21,15 +21,20 @@ namespace api.Controllers
         private readonly IMailService _mailService;
         public AuthenticationController(IAuthenticationService authenticationService, ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMailService mailService)
         {
-             _authenticationService = authenticationService;
-             _context = context;
-             _userManager = userManager;
+            _authenticationService = authenticationService;
+            _context = context;
+            _userManager = userManager;
             _mailService = mailService;
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDTO registerDTO)
         {
+            if( !ModelState.IsValid )
+            {
+                return BadRequest(ModelState);
+            }
+
             var result = await _authenticationService.ResgisterAsync(registerDTO);
             if (result.Flag == false)
             {
@@ -48,18 +53,26 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var result = await _authenticationService.LoginAsync(loginDTO);
             if (result.Flag == false)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
                     new Response { Status = "Error", StatusMessage = result.Message });
             }
-            return Ok(result.token);
+            return Ok(result.Token);
         }
 
         [HttpPost]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changPasswordModel)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (userName == null)
@@ -146,20 +159,24 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetmodel)
         {
-            var user = await _userManager.FindByEmailAsync(resetmodel.email);
+            if(resetmodel == null)
+            {
+                return BadRequest("Invalid payload");
+            }
+            var user = await _userManager.FindByEmailAsync(resetmodel.Email);
             if (user == null)
                 return NotFound("User not found");
 
             await _authenticationService.RemoveExpiredOtps();
 
-            var otpRecord = await _context.OtpStorages.FirstOrDefaultAsync(o => o.UserId == user.Id && o.Otp == resetmodel.otp);
+            var otpRecord = await _context.OtpStorages.FirstOrDefaultAsync(o => o.UserId == user.Id && o.Otp == resetmodel.Otp);
             if (otpRecord == null)
                 return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "OTP not found" });
-            /*if (otpRecord.ExpiryTime <= DateTime.UtcNow)
-                return BadRequest("OTP has expired");
-*/
+            if (otpRecord.ExpiryTime <= DateTime.UtcNow) return BadRequest("OTP has expired");
+
+
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, resetmodel.newPassword);
+            var result = await _userManager.ResetPasswordAsync(user, token, resetmodel.NewPassword);
 
             if (result.Succeeded)
             {

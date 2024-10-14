@@ -37,24 +37,28 @@ namespace api.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateUserProfile(ApplicationUserDTO user)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (userName == null)
+            if (ModelState.IsValid)
             {
-                return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "User not found" });
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (userName == null)
+                {
+                    return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "User not found" });
+                }
+                var userToUpdate = _userManager.Users.FirstOrDefault(x => x.UserName == userName);
+                if (userToUpdate == null) { return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "User not found" }); }
+                userToUpdate.Gender = user.Gender;
+                userToUpdate.FullName = user.FullName;
+                userToUpdate.PhoneNumber = user.PhoneNumber;
+
+                var result = await _userManager.UpdateAsync(userToUpdate);
+                if (result.Succeeded)
+                {
+                    return Ok(new { Status = "Success", StatusMessage = "User updated successfully" });
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", StatusMessage = "User update failed" });
             }
-            var userToUpdate = _userManager.Users.FirstOrDefault(x => x.UserName == userName);
-            userToUpdate.FullName = user.FullName;
-            userToUpdate.Address = user.Address;
-            userToUpdate.Gender = user.Gender;
-            userToUpdate.PhoneNumber = user.PhoneNumber;
-           
-            var result = await _userManager.UpdateAsync(userToUpdate);
-            if (result.Succeeded)
-            {
-                return Ok(new { Status = "Success", StatusMessage = "User updated successfully" });
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", StatusMessage = "User update failed" });
+            return BadRequest(ModelState);
         }
 
     }

@@ -1,9 +1,13 @@
-﻿namespace api.DTOs.Authentication
+﻿using api.Validations;
+
+namespace api.DTOs.Authentication
 {
     public class ChangePasswordDTO
     {
-        public string? CurrentPassword { get; set; }
-        public string? NewPassword { get; set; }
-        public string? ConfirmPassword { get; set; }
+        [PasswordStrength]
+        public required string CurrentPassword { get; set; }
+        [PasswordStrength]
+        public required string NewPassword { get; set; }
+        public required string ConfirmPassword { get; set; }
     }
 }
