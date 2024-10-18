@@ -7,11 +7,12 @@ namespace api.Models
     public class OtpStorage
     {
         [Key]
-        public string? Id { get; set; }
+        public required string Id { get; set; }
         [ForeignKey(nameof(Id))]
-        public string? UserId { get; set; }
-        public string? Otp { get; set; }
-        public DateTime ExpiryTime { get; set; }
-        public ApplicationUser? applicationUser { get; set; }
+        public required string UserId { get; set; }
+        public required string Otp { get; set; }
+        public required DateTime ExpiryTime { get; set; }
+        [ForeignKey("UserId")]
+        public  ApplicationUser? ApplicationUser { get; set; }
     }
 }
