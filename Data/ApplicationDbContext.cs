@@ -24,7 +24,7 @@ namespace api.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<OtpStorage>(entity =>
             {
-                entity.HasOne(o => o.applicationUser)
+                entity.HasOne(o => o.ApplicationUser)
                     .WithMany()
                     .HasForeignKey(o => o.UserId)   
                     .OnDelete(DeleteBehavior.Cascade);

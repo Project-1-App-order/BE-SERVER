@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using api.Models;
 using Newtonsoft.Json.Linq;
 using api.Responses;
+using static api.Responses.ServiceResponse;
 
 namespace api.Services.Functions
 {
@@ -23,18 +24,24 @@ namespace api.Services.Functions
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public AuthenticationService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
+        public AuthenticationService(ApplicationDbContext context,
+                                     UserManager<ApplicationUser> userManager,
+                                     SignInManager<ApplicationUser> signInManager,
+                                     IConfiguration configuration)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
         }
-        public async Task<ServiceResponse.GeneralResponse> ResgisterAsync(RegisterDTO registerDTO)
+        public async Task<GeneralResponse> ResgisterAsync(RegisterDTO registerDTO)
         {
+            if (registerDTO is null)
+            {
+                return new GeneralResponse(false, "Request is null", null);
+            }
             var user = await _userManager.FindByEmailAsync(registerDTO.Email);
-            if (user != null) { return new ServiceResponse.GeneralResponse(false, "Email already exists", null); }
-            if (registerDTO is null) return new ServiceResponse.GeneralResponse(false, "Request is null", null);
+            if (user != null) { return new GeneralResponse(false, "Email already exists", null); }
             var newUser = new ApplicationUser
             {
                 Email = registerDTO.Email,
@@ -44,12 +51,10 @@ namespace api.Services.Functions
             var result = await _userManager.CreateAsync(newUser, registerDTO.Password);
             if (result.Succeeded)
             {
-                return new ServiceResponse.GeneralResponse(true, "Register is sucessfully", null);
+                return new GeneralResponse(true, "Register is sucessfully", null);
             }
-            else
-            {
-                return new ServiceResponse.GeneralResponse(false, "Register failed", null);
-            }
+            return new GeneralResponse(false, "Register failed", null);
+            
 
         }
         public JwtSecurityToken GetToken(List<Claim> authClaims)
@@ -64,18 +69,18 @@ namespace api.Services.Functions
             );
             return token;
         }
-        public async Task<ServiceResponse.LoginResponse> LoginAsync(LoginDTO request)
+        public async Task<LoginResponse> LoginAsync(LoginDTO request)
         {
             var existingUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
-            if (existingUser == null) return new ServiceResponse.LoginResponse(false, "User doesn't exist", null!);
+            if (existingUser == null) return new LoginResponse(false, "User doesn't exist", null!);
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, request.Password);
-            if (!isPasswordValid) return new ServiceResponse.LoginResponse(false, "Invalid password", null!);
+            if (!isPasswordValid) return new LoginResponse(false, "Invalid password", null!);
 
             var authClaims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, existingUser.Email!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(ClaimTypes.Name, existingUser.Email!),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
             var jwtToken = GetToken(authClaims);
@@ -91,15 +96,23 @@ namespace api.Services.Functions
 
             await _userManager.SetAuthenticationTokenAsync(existingUser, tokenDescriptor.LoginProvider, tokenDescriptor.Name, tokenString);
 
-            return new ServiceResponse.LoginResponse(true, "Logined successfully", tokenString);
+            return new LoginResponse(true, "Logined successfully", tokenString);
         }
 
+        public string GenerateRandomOTP()
+        {
+            Random generator = new();
+            string otp = generator.Next(0, 999999).ToString("D6");
+            return otp;
+        }
 
-
-
-
-
-
+        public async Task RemoveExpiredOtps()
+        {
+            var currentTime = DateTime.UtcNow;
+            await _context.OtpStorages
+                .Where(o => o.ExpiryTime < currentTime)
+                .ExecuteDeleteAsync();
+        }
 
     }
 }

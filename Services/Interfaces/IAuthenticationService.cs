@@ -10,6 +10,8 @@ namespace api.Services.Interfaces
         Task<ServiceResponse.GeneralResponse> ResgisterAsync(RegisterDTO registerDTO);
         Task<ServiceResponse.LoginResponse> LoginAsync(LoginDTO registerDTO);
         JwtSecurityToken GetToken(List<Claim> authClaims);
+        public string GenerateRandomOTP();
+        Task RemoveExpiredOtps();
 
     }
 }
