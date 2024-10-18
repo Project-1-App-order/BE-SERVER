@@ -51,17 +51,20 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Logout()
         {
-            if(!ModelState.IsValid)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var currentToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var userToken = _context.UserTokens.FirstOrDefault(ut => ut.Value == currentToken);
+
+            if (userToken != null)
             {
-                return BadRequest(ModelState);
-            }
-            var result = await _authenticationService.LoginAsync(loginDTO);
-            if (result.Flag == false)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new Response { Status = "Error", StatusMessage = result.Message });
+                _context.UserTokens.Remove(userToken);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Logged out successfully from current device" });
+
             }
             return Ok(result.Token);
         }
@@ -187,8 +190,6 @@ namespace api.Controllers
             }
             return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = result.Errors });
         }
-
-
 
     }
 }
