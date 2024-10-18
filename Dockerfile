@@ -21,7 +21,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 # Đặt biến môi trường cho thư mục lưu trữ Data Protection Keys
-ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_ENVIRONMENT=Development
 ENV DataProtectionKeysPath=/root/.aspnet/DataProtection-Keys
 
 # Chạy ứng dụng
