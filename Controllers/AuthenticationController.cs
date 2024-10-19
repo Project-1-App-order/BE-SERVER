@@ -66,7 +66,7 @@ namespace api.Controllers
                 return Ok(new { message = "Logged out successfully from current device" });
 
             }
-            return Ok(result.Token);
+            return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Logout failed"});
         }
 
         [HttpPost]
