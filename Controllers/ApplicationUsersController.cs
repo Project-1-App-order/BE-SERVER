@@ -49,6 +49,7 @@ namespace api.Controllers
                 if (userToUpdate == null) { return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "User not found" }); }
                 userToUpdate.Gender = user.Gender;
                 userToUpdate.FullName = user.FullName;
+                userToUpdate.Address = user.Address;
                 userToUpdate.PhoneNumber = user.PhoneNumber;
 
                 var result = await _userManager.UpdateAsync(userToUpdate);

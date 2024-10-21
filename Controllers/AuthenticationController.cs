@@ -38,16 +38,32 @@ namespace api.Controllers
             var result = await _authenticationService.ResgisterAsync(registerDTO);
             if (result.Flag == false)
             {
-                StatusCode(StatusCodes.Status400BadRequest,
-                                  new Response { Status = "Error", StatusMessage = result.Message });
+               return StatusCode(StatusCodes.Status400BadRequest,
+                                  new Response { Status = result.Flag.ToString(), StatusMessage = result.Message });
 
             }
          
             return StatusCode(StatusCodes.Status200OK, new Response
             {
-               Status = "Success",
-               StatusMessage = "User created successfully"
+               Status = result.Flag.ToString(),
+               StatusMessage = result.Message
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var result = await _authenticationService.LoginAsync(loginDTO);
+            if (result.Flag == false)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new Response { Status = "Error", StatusMessage = result.Message });
+            }
+            return Ok(result.Token);
         }
 
         [HttpPost]
@@ -63,7 +79,7 @@ namespace api.Controllers
             {
                 _context.UserTokens.Remove(userToken);
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "Logged out successfully from current device" });
+                return StatusCode(StatusCodes.Status200OK, new { message = "Logged out successfully from current device" });
 
             }
             return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Logout failed"});
@@ -107,6 +123,10 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> SendOTP(string email)
         {
+            if (!string.IsNullOrEmpty(email)) {
+                   return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "empty email" });
+
+            }
             var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
             {
@@ -118,7 +138,7 @@ namespace api.Controllers
             }
             else
             {
-                return NotFound("User not found");
+                return StatusCode(StatusCodes.Status404NotFound, new Response { Status = "Error", StatusMessage = "User not found" });
             }
 
             string otp = _authenticationService.GenerateRandomOTP();
@@ -150,11 +170,11 @@ namespace api.Controllers
             var exignOtp = await _context.OtpStorages.FirstOrDefaultAsync(o => o.Otp == otp && o.UserId == user.Id);
             if (exignOtp == null)
             {
-                return BadRequest();
+                return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "otp invalid" });
             }
             if (exignOtp.ExpiryTime <= DateTime.UtcNow)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "OTP is expired" });
+                return StatusCode(StatusCodes.Status410Gone, new { Status = "Error", StatusMessage = "OTP is expired" });
             }
             return StatusCode(StatusCodes.Status200OK, new { Status = "Success", StatusMessage = "OTP is valid" });
         }
@@ -162,20 +182,21 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetmodel)
         {
-            if(resetmodel == null)
+
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid payload");
+                return BadRequest(ModelState);
             }
             var user = await _userManager.FindByEmailAsync(resetmodel.Email);
             if (user == null)
-                return NotFound("User not found");
+                return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "user not found" });
 
             await _authenticationService.RemoveExpiredOtps();
 
             var otpRecord = await _context.OtpStorages.FirstOrDefaultAsync(o => o.UserId == user.Id && o.Otp == resetmodel.Otp);
             if (otpRecord == null)
                 return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "OTP not found" });
-            if (otpRecord.ExpiryTime <= DateTime.UtcNow) return BadRequest("OTP has expired");
+            if (otpRecord.ExpiryTime <= DateTime.UtcNow) return StatusCode(StatusCodes.Status410Gone, new { Status = "Error", StatusMessage = "otp expired" });
 
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -183,7 +204,6 @@ namespace api.Controllers
 
             if (result.Succeeded)
             {
-                // Remove the used OTP
                 _context.OtpStorages.Remove(otpRecord);
                 await _context.SaveChangesAsync();
                 return StatusCode(StatusCodes.Status200OK, new { Status = "Success", StatusMessage = "Password reset successfully" });
