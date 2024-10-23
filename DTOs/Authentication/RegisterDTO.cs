@@ -6,10 +6,15 @@ namespace api.DTOs.Authentication
 {
     public class RegisterDTO
     {
-        [Required]
+        private string email;
+        [Required(ErrorMessage = "Emtpy email")]
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Email invalid")]
-        public required string Email { get; set; }
-        [PasswordStrength]
+        public required string Email
+        {
+            get => email;
+            set => email = value.Trim(); 
+        }
+        [Required(ErrorMessage = "Emtpy Password")]
         public required string Password { get; set; }
     }
 }

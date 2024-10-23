@@ -60,7 +60,7 @@ namespace api.Controllers
             var result = await _authenticationService.LoginAsync(loginDTO);
             if (result.Flag == false)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
+                return StatusCode(StatusCodes.Status400BadRequest,
                     new Response { Status = "Error", StatusMessage = result.Message });
             }
             return Ok(result.Token);

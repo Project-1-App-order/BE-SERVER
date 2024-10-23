@@ -36,24 +36,26 @@ namespace api.Services.Functions
         }
         public async Task<GeneralResponse> ResgisterAsync(RegisterDTO registerDTO)
         {
+            
             if (registerDTO is null)
             {
                 return new GeneralResponse(false, "Request is null", null);
             }
-            var user = await _userManager.FindByEmailAsync(registerDTO.Email);
+            var email = registerDTO.Email.Trim();
+            var user = await _userManager.FindByEmailAsync(email);
             if (user != null) { return new GeneralResponse(false, "Email already exists", null); }
             var newUser = new ApplicationUser
             {
-                Email = registerDTO.Email,
-                UserName = registerDTO.Email,
+                Email = email,
+                UserName = email,
                 Id = Guid.NewGuid().ToString()
             };
             var result = await _userManager.CreateAsync(newUser, registerDTO.Password);
             if (result.Succeeded)
             {
-                return new GeneralResponse(true, "Register is sucessfully", null);
+                return new GeneralResponse(true, "Register succesfully", null);
             }
-            return new GeneralResponse(false, "Register failed", null);
+            return new GeneralResponse(false, "Resgister failed", null);
             
 
         }
@@ -71,7 +73,9 @@ namespace api.Services.Functions
         }
         public async Task<LoginResponse> LoginAsync(LoginDTO request)
         {
-            var existingUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
+            if (request is null) return new LoginResponse(false, "Request is null", null!);
+            var email = request.Email.Trim();
+            var existingUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (existingUser == null) return new LoginResponse(false, "User doesn't exist", null!);
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, request.Password);
