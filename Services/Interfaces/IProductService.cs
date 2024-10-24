@@ -6,7 +6,7 @@ namespace api.Services.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<FoodDTO>> GetProductsAsync(string? id, string? name);
+        Task<Object> GetFoodsAsync(string? id = null, string? name = null);
         Task<List<Category>> GetCategoryAsync();
 
     }

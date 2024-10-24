@@ -21,9 +21,21 @@ namespace api.Services.Functions
             return result;
         }
 
-        public Task<IEnumerable<FoodDTO>> GetProductsAsync(string? id, string? name)
+        public async Task<Object> GetFoodsAsync(string? id = null, string? name = null)
         {
-            throw new NotImplementedException();
+            var query = _context.Foods
+                                .Include(b => b.Category)
+                                .AsQueryable();
+            if (!String.IsNullOrEmpty(id))
+            {
+                query = query.Where(b =>b.Equals(id));
+            }
+            if (!String.IsNullOrEmpty(name))
+            {
+                query = query.Where(b => b.FoodName.ToLower().Contains(name.ToLower().Trim()));
+            }
+            var result = await query.AsNoTracking().ToListAsync();
+            return new { result };
         }
     }
 }
