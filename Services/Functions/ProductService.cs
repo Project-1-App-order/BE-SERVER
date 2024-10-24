@@ -21,6 +21,19 @@ namespace api.Services.Functions
             return result;
         }
 
+        public async Task<List<FoodImage>> GetFoodImageAsync(string? foodId = null)
+        {
+            var query = _context.FoodImages
+                                .Include(b => b.Foods)
+                                .AsQueryable();
+            if (!string.IsNullOrEmpty(foodId))
+            {
+                query = query.Where(b => b.FoodId == foodId);
+            }
+            var result = await query.AsNoTracking().ToListAsync();
+            return result;
+        }
+
         public async Task<Object> GetFoodsAsync(string? id = null, string? name = null)
         {
             var query = _context.Foods

@@ -24,5 +24,12 @@ namespace api.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllImagesAndFoods()
+        {
+            var result = await _productService.GetFoodImageAsync();
+            return Ok(result);
+        }
+
     }
 }
