@@ -119,7 +119,7 @@ builder.Services.AddCors(options =>
 //resgister DI
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<api.Services.MailServices.IMailService, api.Services.MailServices.MailService>();
-
+builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
