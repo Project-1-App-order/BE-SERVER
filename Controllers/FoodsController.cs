@@ -5,6 +5,7 @@ using api.Responses;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -66,6 +67,36 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
             return StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", StatusMessage = "Add foodimg sucess" });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTopTenBestSeller()
+        {
+            var topFoodWithImages = await _context.Foods
+                .Join(_context.OrderDetails,
+                      f => f.FoodId,
+                      od => od.FoodId,
+                      (f, od) => new { Food = f, OrderDetail = od })
+                .Join(_context.Orders,
+                      fo => fo.OrderDetail.OrderId,
+                      o => o.OrderId,
+                      (fo, o) => new { fo.Food, Order = o, fo.OrderDetail })
+                .Where(result => result.Order.OrderTypeId == "2")
+                .GroupBy(result => new { result.Food.FoodId, result.Food.FoodName, result.Food.Price })
+                .Select(g => new
+                {
+                    FoodId = g.Key.FoodId,
+                    FoodName = g.Key.FoodName,
+                    Price = g.Key.Price,
+                    TotalSold = g.Sum(x => x.OrderDetail.Quantity),
+                    Images = g.SelectMany(x => x.Food.Images.Select(img => img.ImageUrl)).ToList()
+                })
+                .OrderByDescending(x => x.TotalSold)
+                .Take(10)
+                .ToListAsync();
+
+            return Ok(topFoodWithImages);
+        }
+
 
     }
 }

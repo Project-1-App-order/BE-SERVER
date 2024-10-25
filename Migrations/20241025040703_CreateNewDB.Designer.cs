@@ -12,8 +12,8 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241009060330_FirstDB")]
-    partial class FirstDB
+    [Migration("20241025040703_CreateNewDB")]
+    partial class CreateNewDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -166,7 +166,6 @@ namespace api.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -180,8 +179,10 @@ namespace api.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<bool>("LockoutEnabled")
@@ -234,14 +235,16 @@ namespace api.Migrations
                     b.Property<string>("CategoryId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("CategoryName")
-                        .IsRequired()
+                    b.Property<string>("CategoryImgUrl")
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<string>("CategoryName")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("UpdateAt")
+                    b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("CategoryId");
@@ -258,24 +261,22 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("FoodName")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal?>("Price")
                         .HasColumnType("decimal(65,30)");
 
-                    b.Property<int>("Status")
+                    b.Property<int?>("Status")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdateAt")
+                    b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("FoodId");
@@ -290,7 +291,7 @@ namespace api.Migrations
                     b.Property<string>("ImageId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("FoodId")
@@ -301,7 +302,7 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("UpdateAt")
+                    b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("ImageId");
@@ -316,11 +317,10 @@ namespace api.Migrations
                     b.Property<string>("OrderId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("OrderNote")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("OrderStatus")
@@ -331,7 +331,7 @@ namespace api.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("UpdateAt")
+                    b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("UserId")
@@ -352,24 +352,22 @@ namespace api.Migrations
                     b.Property<string>("OrderId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("FoodId")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdateAt")
+                    b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("OrderId");
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("OrderId", "FoodId");
 
                     b.HasIndex("FoodId");
 
@@ -381,14 +379,13 @@ namespace api.Migrations
                     b.Property<string>("OderTypeId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("OderTypeName")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("UpdateAt")
+                    b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("OderTypeId");
@@ -405,9 +402,11 @@ namespace api.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Otp")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
@@ -530,12 +529,13 @@ namespace api.Migrations
 
             modelBuilder.Entity("api.Models.OtpStorage", b =>
                 {
-                    b.HasOne("api.Models.ApplicationUser", "applicationUser")
+                    b.HasOne("api.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("applicationUser");
+                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("api.Models.Category", b =>
