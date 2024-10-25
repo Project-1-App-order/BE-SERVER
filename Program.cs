@@ -1,7 +1,6 @@
 using api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System.Net.WebSockets;
 using api.Services.Functions;
 using api.Services.Interfaces;
 using System.Text.Json.Serialization;
@@ -11,7 +10,8 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using api.Models;
 using api.Services.MailServices;
-using MailKit;
+using CloudinaryDotNet;
+using Microsoft.Extensions.Options;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,6 +79,21 @@ if (emailConfiguration == null)
 builder.Services.AddSingleton(emailConfiguration);
 builder.Services.AddHttpClient();
 
+///
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
+builder.Services.AddSingleton(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+    var account = new Account(
+        config.CloudName,
+        config.ApiKey,
+        config.ApiSecret
+    );
+
+    return new Cloudinary(account);
+});
+
 
 /////
 ///
@@ -120,6 +135,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<api.Services.MailServices.IMailService, api.Services.MailServices.MailService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
