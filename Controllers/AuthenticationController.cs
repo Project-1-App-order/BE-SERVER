@@ -123,7 +123,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> SendOTP(string email)
         {
-            if (!string.IsNullOrEmpty(email)) {
+            if (string.IsNullOrEmpty(email)) {
                    return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "empty email" });
 
             }
