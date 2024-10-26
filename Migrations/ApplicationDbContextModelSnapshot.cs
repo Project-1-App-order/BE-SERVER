@@ -232,6 +232,9 @@ namespace api.Migrations
                     b.Property<string>("CategoryId")
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("CategoryImgUrl")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("CategoryName")
                         .HasColumnType("longtext");
 
@@ -346,11 +349,11 @@ namespace api.Migrations
                     b.Property<string>("OrderId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime?>("CreateAt")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("FoodId")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime?>("CreateAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Note")
                         .HasColumnType("longtext");
@@ -361,7 +364,7 @@ namespace api.Migrations
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("OrderId");
+                    b.HasKey("OrderId", "FoodId");
 
                     b.HasIndex("FoodId");
 
@@ -506,7 +509,9 @@ namespace api.Migrations
                 {
                     b.HasOne("api.Models.Food", "Food")
                         .WithMany()
-                        .HasForeignKey("FoodId");
+                        .HasForeignKey("FoodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("api.Models.Order", "Order")
                         .WithMany("OrderDetails")

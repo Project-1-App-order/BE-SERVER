@@ -9,6 +9,7 @@ namespace api.Models
         public string? CategoryName { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
+        public string? CategoryImgUrl { get; set; }
         public ICollection<Food>? Foods { get; set; }
     }
 }

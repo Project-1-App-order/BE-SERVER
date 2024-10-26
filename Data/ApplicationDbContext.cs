@@ -31,6 +31,9 @@ namespace api.Data
 
                 entity.HasIndex(o => o.UserId);
             });
+
+            modelBuilder.Entity<OrderDetail>()
+              .HasKey(rd => new { rd.OrderId, rd.FoodId });
         }
     }
 }

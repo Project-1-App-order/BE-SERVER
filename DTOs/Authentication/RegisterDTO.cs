@@ -15,6 +15,7 @@ namespace api.DTOs.Authentication
             set => email = value.Trim(); 
         }
         [Required(ErrorMessage = "Emtpy Password")]
+        [PasswordStrength]
         public required string Password { get; set; }
     }
 }
