@@ -30,13 +30,6 @@ namespace api.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllImagesAndFoods()
-        {
-            var result = await _productService.GetFoodImageAsync();
-            return Ok(result);
-        }
-
         [HttpPost]
         public async Task<IActionResult> UploadFoodsImages([FromForm] FoodImageDTO foodImageDTO)
         {
@@ -88,10 +81,11 @@ namespace api.Controllers
                     FoodName = g.Key.FoodName,
                     Price = g.Key.Price,
                     TotalSold = g.Sum(x => x.OrderDetail.Quantity),
-                    Images = g.SelectMany(x => x.Food.Images.Select(img => img.ImageUrl)).ToList()
+                    Images = g.SelectMany(x => x.Food.Images.Select(img => img.ImageUrl)).Distinct().ToList()
                 })
                 .OrderByDescending(x => x.TotalSold)
                 .Take(10)
+                .AsNoTracking()
                 .ToListAsync();
 
             return Ok(topFoodWithImages);

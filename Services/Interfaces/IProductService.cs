@@ -8,7 +8,6 @@ namespace api.Services.Interfaces
     {
         Task<Object> GetFoodsAsync(string? id = null, string? name = null);
         Task<List<Category>> GetCategoryAsync();
-        Task<List<FoodImage>> GetFoodImageAsync(string? foodId = null);
 
     }
 }

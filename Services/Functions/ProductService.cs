@@ -21,33 +21,32 @@ namespace api.Services.Functions
             return result;
         }
 
-        public async Task<List<FoodImage>> GetFoodImageAsync(string? foodId = null)
-        {
-            var query = _context.FoodImages
-                                .Include(b => b.Foods)
-                                .AsQueryable();
-            if (!string.IsNullOrEmpty(foodId))
-            {
-                query = query.Where(b => b.FoodId == foodId);
-            }
-            var result = await query.AsNoTracking().ToListAsync();
-            return result;
-        }
-
         public async Task<Object> GetFoodsAsync(string? id = null, string? name = null)
         {
             var query = _context.Foods
                                 .Include(b => b.Category)
+                                .Join(_context.FoodImages,
+                                      f => f.FoodId,
+                                      img => img.FoodId,
+                                      (f, img) => new { Food = f, FoodImage = img }) 
                                 .AsQueryable();
             if (!String.IsNullOrEmpty(id))
             {
-                query = query.Where(b =>b.Equals(id));
+                query = query.Where(b =>b.Food.FoodId == id);
             }
             if (!String.IsNullOrEmpty(name))
             {
-                query = query.Where(b => b.FoodName.ToLower().Contains(name.ToLower().Trim()));
+                query = query.Where(f => f.Food.FoodName.ToLower().Contains(name.ToLower().Trim()));
             }
-            var result = await query.AsNoTracking().ToListAsync();
+            var result = await query.GroupBy(query => new { query.Food.FoodId, query.Food.FoodName, query.Food.Price })
+                                    .Select(g => new
+                                    {
+                                        FoodId = g.Key.FoodId,
+                                        FoodName = g.Key.FoodName,
+                                        Price = g.Key.Price,
+                                        FoodImages = g.Select(f => f.FoodImage.ImageUrl).ToList()
+                                    })
+                                    .ToListAsync();
             return new { result };
         }
     }
