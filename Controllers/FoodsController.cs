@@ -6,6 +6,7 @@ using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using api.Services.Functions;
 
 namespace api.Controllers
 {
@@ -16,7 +17,7 @@ namespace api.Controllers
         private readonly IProductService _productService;
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
-        public FoodsController(IProductService productService, ApplicationDbContext context, IImageService imageService)
+        public FoodsController(ProductService productService, ApplicationDbContext context, IImageService imageService)
         {
             _productService = productService;
             _context = context;
@@ -90,6 +91,13 @@ namespace api.Controllers
 
             return Ok(topFoodWithImages);
         }
+
+      /*  [HttpGet]
+        public async Task<IActionResult> GetFoodsByCategory(string categoryId)
+        {
+            var result = await _productService.GetFoodsAsync(categoryId: categoryId);
+            return Ok(result);
+        }*/
 
 
     }

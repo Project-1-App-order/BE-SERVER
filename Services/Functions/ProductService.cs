@@ -3,6 +3,7 @@ using api.DTOs;
 using api.Models;
 using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace api.Services.Functions
 {
@@ -21,33 +22,28 @@ namespace api.Services.Functions
             return result;
         }
 
-        public async Task<Object> GetFoodsAsync(string? id = null, string? name = null)
+        public async Task<object> GetFoodsAsync(FoodDTO? foodDTO = null)
         {
             var query = _context.Foods
-                                .Include(b => b.Category)
-                                .Join(_context.FoodImages,
-                                      f => f.FoodId,
-                                      img => img.FoodId,
-                                      (f, img) => new { Food = f, FoodImage = img }) 
-                                .AsQueryable();
-            if (!String.IsNullOrEmpty(id))
-            {
-                query = query.Where(b =>b.Food.FoodId == id);
-            }
-            if (!String.IsNullOrEmpty(name))
-            {
-                query = query.Where(f => f.Food.FoodName.ToLower().Contains(name.ToLower().Trim()));
-            }
-            var result = await query.GroupBy(query => new { query.Food.FoodId, query.Food.FoodName, query.Food.Price })
-                                    .Select(g => new
-                                    {
-                                        FoodId = g.Key.FoodId,
-                                        FoodName = g.Key.FoodName,
-                                        Price = g.Key.Price,
-                                        FoodImages = g.Select(f => f.FoodImage.ImageUrl).ToList()
-                                    })
-                                    .ToListAsync();
+                                .Where(f =>
+                                    (string.IsNullOrEmpty(foodDTO.FoodId) || f.FoodId == foodDTO.FoodId) &&
+                                    (string.IsNullOrEmpty(foodDTO.FoodName) || f.FoodName.ToLower().Contains(foodDTO.FoodName.ToLower().Trim())) &&
+                                    (string.IsNullOrEmpty(foodDTO.CategoryId) || f.CategoryId == foodDTO.CategoryId))
+                                .Include(f => f.Category)
+                                .Select(f => new
+                                {
+                                    f.FoodId,
+                                    f.FoodName,
+                                    f.Price,
+                                    FoodImages = _context.FoodImages
+                                                        .Where(img => img.FoodId == f.FoodId)
+                                                        .Select(img => img.ImageUrl)
+                                                        .ToList()
+                                });
+
+            var result = await query.ToListAsync();
             return new { result };
         }
+
     }
 }
