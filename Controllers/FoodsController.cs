@@ -83,7 +83,7 @@ namespace api.Controllers
                     g.Key.FoodName,
                     g.Key.Price,
                     g.Key.Description,
-                    FoodImages = g.SelectMany(x => x.Food.Images.Select(img => img.ImageUrl)).Distinct().ToList()
+                    FoodImages = g.SelectMany(x => x.Food.Images!.Select(img => img.ImageUrl)).Distinct().ToList()
                 })
                 .Take(10)
                 .AsNoTracking()
