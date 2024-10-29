@@ -6,6 +6,7 @@ using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using api.Services.Functions;
 
 namespace api.Controllers
 {
@@ -74,23 +75,48 @@ namespace api.Controllers
                       o => o.OrderId,
                       (fo, o) => new { fo.Food, Order = o, fo.OrderDetail })
                 .Where(result => result.Order.OrderTypeId == "2")
-                .GroupBy(result => new { result.Food.FoodId, result.Food.FoodName, result.Food.Price })
+                .GroupBy(result => new { result.Food.FoodId, result.Food.FoodName, result.Food.Price, result.Food.Description })
+                .OrderByDescending(x => x.Sum(x => x.OrderDetail.Quantity))
                 .Select(g => new
                 {
-                    FoodId = g.Key.FoodId,
-                    FoodName = g.Key.FoodName,
-                    Price = g.Key.Price,
-                    TotalSold = g.Sum(x => x.OrderDetail.Quantity),
-                    Images = g.SelectMany(x => x.Food.Images.Select(img => img.ImageUrl)).Distinct().ToList()
+                    g.Key.FoodId,
+                    g.Key.FoodName,
+                    g.Key.Price,
+                    g.Key.Description,
+                    FoodImages = g.SelectMany(x => x.Food.Images!.Select(img => img.ImageUrl)).Distinct().ToList()
                 })
-                .OrderByDescending(x => x.TotalSold)
                 .Take(10)
                 .AsNoTracking()
                 .ToListAsync();
 
             return Ok(topFoodWithImages);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetFoodsByFoodId(string foodId)
+        {
+            var result = await _productService.GetFoodsAsync(new FoodDTO() { FoodId = foodId });
+            return Ok(result);
+        }
 
+        [HttpGet]
+        public async Task<IActionResult> GetFoodsByFoodName(string foodName)
+        {
+            var result = await _productService.GetFoodsAsync(new FoodDTO() { FoodName = foodName });
+            return Ok(result);
+        }
 
+        [HttpGet]
+        public async Task<IActionResult> GetFoodsByCategory(string categoryId)
+        {
+            var result = await _productService.GetFoodsAsync(new FoodDTO() {CategoryId = categoryId });
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetFoodsByPrice(decimal startPrice, decimal endPrice)
+        {
+            var result = await _productService.GetFoodsAsync(new FoodDTO() { StartPrice = startPrice, EndPrice = endPrice });
+            return Ok(result);
+        }
     }
 }

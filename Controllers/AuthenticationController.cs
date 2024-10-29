@@ -29,14 +29,14 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterDTO registerDTO)
+        public async Task<IActionResult> Register(RegisterDTO registerDto)
         {
             if( !ModelState.IsValid )
             {
                 return BadRequest(ModelState);
             }
 
-            var result = await _authenticationService.ResgisterAsync(registerDTO);
+            var result = await _authenticationService.ResgisterAsync(registerDto);
             if (result.Flag == false)
             {
                return StatusCode(StatusCodes.Status400BadRequest,
@@ -52,13 +52,13 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var result = await _authenticationService.LoginAsync(loginDTO);
+            var result = await _authenticationService.LoginAsync(loginDto);
             if (result.Flag == false)
             {
                 return StatusCode(StatusCodes.Status400BadRequest,
@@ -95,7 +95,6 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (userName == null)
             {
@@ -164,7 +163,7 @@ namespace api.Controllers
             return Ok($"OTP sent to email: {otp}");
         }
         [HttpPost]
-        public async Task<IActionResult> VerifyOTP(string email, string otp)
+        public async Task<IActionResult> VerifyOtp(string email, string otp)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)

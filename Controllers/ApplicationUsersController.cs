@@ -41,7 +41,6 @@ namespace api.Controllers
         {
             if (ModelState.IsValid)
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var userName = User.FindFirst(ClaimTypes.Name)?.Value;
                 if (userName == null)
                 {

@@ -6,8 +6,7 @@ namespace api.Services.Interfaces
 {
     public interface IProductService
     {
-        Task<Object> GetFoodsAsync(string? id = null, string? name = null);
+        Task<Object> GetFoodsAsync(FoodDTO? foodDTO = null);
         Task<List<Category>> GetCategoryAsync();
-
     }
 }
