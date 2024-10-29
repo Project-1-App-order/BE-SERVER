@@ -1,6 +1,7 @@
 ﻿using api.Data;
 using api.DTOs;
 using api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ namespace api.Controllers
             _userManager = userManager;
             _context = context;
         }
-
+        [Authorize]
         [HttpGet]
         public IActionResult GetUserProfile()
         {
@@ -34,6 +35,7 @@ namespace api.Controllers
 
         }
 
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateUserProfile(ApplicationUserDTO user)
         {
@@ -51,6 +53,7 @@ namespace api.Controllers
                 userToUpdate.FullName = user.FullName;
                 userToUpdate.Address = user.Address;
                 userToUpdate.PhoneNumber = user.PhoneNumber;
+
 
                 var result = await _userManager.UpdateAsync(userToUpdate);
                 if (result.Succeeded)
