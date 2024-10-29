@@ -12,7 +12,7 @@ namespace api.Validations
 
             if (string.IsNullOrEmpty(password))
             {
-                return new ValidationResult("Password is required");
+                return new ValidationResult("Empty Password");
             }
 
             // Kiểm tra các điều kiệnx

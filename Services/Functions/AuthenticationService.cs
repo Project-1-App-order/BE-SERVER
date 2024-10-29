@@ -50,7 +50,7 @@ namespace api.Services.Functions
                 UserName = email,
                 Id = Guid.NewGuid().ToString()
             };
-            var result = await _userManager.CreateAsync(newUser, registerDTO.Password);
+            var result = await _userManager.CreateAsync(newUser, registerDTO.Password.Trim());
             if (result.Succeeded)
             {
                 return new GeneralResponse(true, "Register succesfully", null);

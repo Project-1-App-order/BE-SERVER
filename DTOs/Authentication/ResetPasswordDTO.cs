@@ -9,7 +9,6 @@ namespace api.DTOs.Authentication
         public required string Email { get; set; }
         [Required(ErrorMessage = "Emtpy otp")]
         public required string Otp { get; set; }
-        [Required(ErrorMessage = "Emtpy Password")]
         [PasswordStrength]
         public required string NewPassword { get; set; }
     }

@@ -8,6 +8,7 @@ using api.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using api.Services.MailServices;
+using Microsoft.AspNetCore.Authorization;
 
 namespace api.Controllers
 {
@@ -66,6 +67,7 @@ namespace api.Controllers
             return Ok(result.Token);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
@@ -85,6 +87,7 @@ namespace api.Controllers
             return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Logout failed"});
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changPasswordModel)
         {
@@ -121,8 +124,9 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendOTP(string email)
+        public async Task<IActionResult> SendOTP(string Email)
         {
+            var email = Email.Trim();
             if (string.IsNullOrEmpty(email)) {
                    return StatusCode(StatusCodes.Status400BadRequest, new { Status = "Error", StatusMessage = "empty email" });
 
