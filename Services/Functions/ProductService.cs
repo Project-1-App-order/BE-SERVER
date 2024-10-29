@@ -28,7 +28,10 @@ namespace api.Services.Functions
                                 .Where(f =>
                                     (foodDTO == null || string.IsNullOrEmpty(foodDTO.FoodId) || f.FoodId == foodDTO.FoodId) &&
                                     (foodDTO == null || string.IsNullOrEmpty(foodDTO.FoodName) || f.FoodName.ToLower().Contains(foodDTO.FoodName.ToLower().Trim())) &&
-                                    (foodDTO == null || string.IsNullOrEmpty(foodDTO.CategoryId) || f.CategoryId == foodDTO.CategoryId))
+                                    (foodDTO == null || string.IsNullOrEmpty(foodDTO.CategoryId) || f.CategoryId == foodDTO.CategoryId) &&
+                                    (foodDTO == null || !foodDTO.StartPrice.HasValue && !foodDTO.EndPrice.HasValue ||  foodDTO.StartPrice <= f.Price && f.Price <= foodDTO.EndPrice  )
+                                    )
+                                    
                                 .Include(f => f.Category)
                                 .Select(f => new
                                 {

@@ -91,14 +91,32 @@ namespace api.Controllers
 
             return Ok(topFoodWithImages);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetFoodsByFoodId(string foodId)
+        {
+            var result = await _productService.GetFoodsAsync(new FoodDTO() { FoodId = foodId });
+            return Ok(result);
+        }
 
-      /*  [HttpGet]
+        [HttpGet]
+        public async Task<IActionResult> GetFoodsByFoodName(string foodName)
+        {
+            var result = await _productService.GetFoodsAsync(new FoodDTO() { FoodName = foodName });
+            return Ok(result);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetFoodsByCategory(string categoryId)
         {
-            var result = await _productService.GetFoodsAsync(categoryId: categoryId);
+            var result = await _productService.GetFoodsAsync(new FoodDTO() {CategoryId = categoryId });
             return Ok(result);
-        }*/
+        }
 
-
+        [HttpGet]
+        public async Task<IActionResult> GetFoodsByPrice(decimal startPrice, decimal endPrice)
+        {
+            var result = await _productService.GetFoodsAsync(new FoodDTO() { StartPrice = startPrice, EndPrice = endPrice });
+            return Ok(result);
+        }
     }
 }
