@@ -17,7 +17,7 @@ namespace api.Controllers
         private readonly IProductService _productService;
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
-        public FoodsController(ProductService productService, ApplicationDbContext context, IImageService imageService)
+        public FoodsController(IProductService productService, ApplicationDbContext context, IImageService imageService)
         {
             _productService = productService;
             _context = context;
@@ -75,16 +75,16 @@ namespace api.Controllers
                       o => o.OrderId,
                       (fo, o) => new { fo.Food, Order = o, fo.OrderDetail })
                 .Where(result => result.Order.OrderTypeId == "2")
-                .GroupBy(result => new { result.Food.FoodId, result.Food.FoodName, result.Food.Price })
+                .GroupBy(result => new { result.Food.FoodId, result.Food.FoodName, result.Food.Price, result.Food.Description })
+                .OrderByDescending(x => x.Sum(x => x.OrderDetail.Quantity))
                 .Select(g => new
                 {
-                    FoodId = g.Key.FoodId,
-                    FoodName = g.Key.FoodName,
-                    Price = g.Key.Price,
-                    TotalSold = g.Sum(x => x.OrderDetail.Quantity),
-                    Images = g.SelectMany(x => x.Food.Images.Select(img => img.ImageUrl)).Distinct().ToList()
+                    g.Key.FoodId,
+                    g.Key.FoodName,
+                    g.Key.Price,
+                    g.Key.Description,
+                    FoodImages = g.SelectMany(x => x.Food.Images.Select(img => img.ImageUrl)).Distinct().ToList()
                 })
-                .OrderByDescending(x => x.TotalSold)
                 .Take(10)
                 .AsNoTracking()
                 .ToListAsync();

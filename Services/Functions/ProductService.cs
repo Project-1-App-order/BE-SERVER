@@ -22,19 +22,20 @@ namespace api.Services.Functions
             return result;
         }
 
-        public async Task<object> GetFoodsAsync(FoodDTO? foodDTO = null)
+        public async Task<Object> GetFoodsAsync(FoodDTO? foodDTO = null)
         {
             var query = _context.Foods
                                 .Where(f =>
-                                    (string.IsNullOrEmpty(foodDTO.FoodId) || f.FoodId == foodDTO.FoodId) &&
-                                    (string.IsNullOrEmpty(foodDTO.FoodName) || f.FoodName.ToLower().Contains(foodDTO.FoodName.ToLower().Trim())) &&
-                                    (string.IsNullOrEmpty(foodDTO.CategoryId) || f.CategoryId == foodDTO.CategoryId))
+                                    (foodDTO == null || string.IsNullOrEmpty(foodDTO.FoodId) || f.FoodId == foodDTO.FoodId) &&
+                                    (foodDTO == null || string.IsNullOrEmpty(foodDTO.FoodName) || f.FoodName.ToLower().Contains(foodDTO.FoodName.ToLower().Trim())) &&
+                                    (foodDTO == null || string.IsNullOrEmpty(foodDTO.CategoryId) || f.CategoryId == foodDTO.CategoryId))
                                 .Include(f => f.Category)
                                 .Select(f => new
                                 {
                                     f.FoodId,
                                     f.FoodName,
                                     f.Price,
+                                    f.Description,
                                     FoodImages = _context.FoodImages
                                                         .Where(img => img.FoodId == f.FoodId)
                                                         .Select(img => img.ImageUrl)
