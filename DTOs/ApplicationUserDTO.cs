@@ -30,7 +30,7 @@ namespace api.DTOs
             set => _gender = value?.Trim();
         }
 
-        [RegularExpression(@"^[a-zA-Z0-9\s]{50,100}$", ErrorMessage = "Invalid format.")]
+        [RegularExpression(@"^[a-zA-Z0-9\s,\/\-\u00C0-\u024F\u1E00-\u1EFF]{5,100}$", ErrorMessage = "Invalid format.")]
         public string? Address
         {
             get => _address;
