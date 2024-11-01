@@ -12,6 +12,7 @@ using api.Models;
 using api.Services.MailServices;
 using CloudinaryDotNet;
 using Microsoft.Extensions.Options;
+using api.Middlewares;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -136,6 +137,7 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<api.Services.MailServices.IMailService, api.Services.MailServices.MailService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -144,9 +146,9 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddControllers();
-// Add services to the container.
+//tu dong xoa token het han
+builder.Services.AddHostedService<CleanupRevokedTokensService>();
 
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -163,8 +165,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<TokenRevocationMiddleware>();
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

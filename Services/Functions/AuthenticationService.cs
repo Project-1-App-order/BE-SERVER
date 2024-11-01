@@ -65,7 +65,7 @@ namespace api.Services.Functions
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
-                expires: DateTime.Now.AddMonths(2),
+                expires: DateTime.UtcNow.AddMinutes(2),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSiginKey, SecurityAlgorithms.HmacSha256)
             );
