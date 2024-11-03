@@ -15,9 +15,9 @@ namespace api.Models
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
         [ForeignKey("OrderTypeId")]
-        public required OrderType OrderType { get; set; }
+        public  OrderType? OrderType { get; set; }
         [ForeignKey("UserId")]
-        public required ApplicationUser User { get; set; }
+        public  ApplicationUser? User { get; set; }
         public ICollection<OrderDetail>? OrderDetails { get; set; }
     }
 }
