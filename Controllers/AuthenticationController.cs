@@ -199,7 +199,8 @@ namespace api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var user = await _userManager.FindByEmailAsync(resetmodel.Email);
+            var email = resetmodel.Email.Trim();
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
                 return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "user not found" });
 
