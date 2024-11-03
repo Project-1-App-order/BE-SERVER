@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Services.Functions;
+using MySqlX.XDevAPI.Common;
 
 namespace api.Controllers
 {
@@ -102,7 +103,7 @@ namespace api.Controllers
         public async Task<IActionResult> GetFoodsByFoodName(string foodName)
         {
             if (string.IsNullOrWhiteSpace(foodName)
-                                          || foodName.Length < 4
+                                          || foodName.Length < 0
                                           || foodName.Length > 50
                                           || !System.Text.RegularExpressions.Regex.IsMatch(foodName.Trim(), @"^[a-zA-Z0-9\s]+$"))
             {
@@ -116,20 +117,20 @@ namespace api.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetFoodsByCategory(string categoryId)
-        {
-            var result = await _productService.GetFoodsAsync(new FoodDTO() {CategoryId = categoryId });
-            return Ok(result);
-        }
+      
 
         [HttpGet]
-        public async Task<IActionResult> GetFoodsByPrice(decimal startPrice, decimal endPrice)
+        public async Task<IActionResult> FIlterGetFoods([FromQuery]FoodDTO foodDTO)
         {
-            if (startPrice < 0 || endPrice < 0 || startPrice > endPrice)
-                return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Invalid price range." });
+            if (foodDTO.StartPrice.HasValue && !foodDTO.EndPrice.HasValue)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Invalid EndPrice" });
+            }
+            if(!foodDTO.StartPrice.HasValue &&  foodDTO.EndPrice.HasValue) foodDTO.StartPrice = 0;
 
-            var result = await _productService.GetFoodsAsync(new FoodDTO() { StartPrice = startPrice, EndPrice = endPrice });
+            if (foodDTO.StartPrice < 0 || foodDTO.EndPrice < 0 || foodDTO.StartPrice > foodDTO.EndPrice)
+               return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Invalid" });
+            var result = await _productService.GetFoodsAsync(foodDTO);
             return Ok(result);
         }
     }

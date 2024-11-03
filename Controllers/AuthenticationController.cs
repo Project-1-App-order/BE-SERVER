@@ -20,12 +20,21 @@ namespace api.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMailService _mailService;
-        public AuthenticationController(IAuthenticationService authenticationService, ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMailService mailService)
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ITokenService _tokenService;
+        public AuthenticationController(IAuthenticationService authenticationService, 
+                                        ApplicationDbContext context, 
+                                        UserManager<ApplicationUser> userManager, 
+                                        IMailService mailService,
+                                        SignInManager<ApplicationUser> signInManager,
+                                        ITokenService tokenService)
         {
             _authenticationService = authenticationService;
             _context = context;
             _userManager = userManager;
             _mailService = mailService;
+            _signInManager = signInManager;
+            _tokenService = tokenService;
         }
 
         [HttpPost]
@@ -71,20 +80,20 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var currentToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
             var userToken = _context.UserTokens.FirstOrDefault(ut => ut.Value == currentToken);
-
             if (userToken != null)
             {
                 _context.UserTokens.Remove(userToken);
+                await _signInManager.SignOutAsync();
                 await _context.SaveChangesAsync();
+                await _tokenService.RevokeTokenAsync(currentToken, DateTime.UtcNow.AddMinutes(2));
                 return StatusCode(StatusCodes.Status200OK, new { message = "Logged out successfully from current device" });
 
             }
-            return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Logout failed"});
+            return StatusCode(StatusCodes.Status401Unauthorized, new Response { Status = "Error", StatusMessage = "Logout failed"});
         }
 
         [Authorize]
@@ -163,8 +172,9 @@ namespace api.Controllers
             return Ok($"OTP sent to email: {otp}");
         }
         [HttpPost]
-        public async Task<IActionResult> VerifyOtp(string email, string otp)
+        public async Task<IActionResult> VerifyOtp(string userEmail, string otp)
         {
+            var email = userEmail.Trim();
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
@@ -185,12 +195,12 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetmodel)
         {
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var user = await _userManager.FindByEmailAsync(resetmodel.Email);
+            var email = resetmodel.Email.Trim();
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
                 return StatusCode(StatusCodes.Status404NotFound, new { Status = "Error", StatusMessage = "user not found" });
 

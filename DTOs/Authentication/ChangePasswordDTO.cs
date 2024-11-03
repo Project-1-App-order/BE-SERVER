@@ -6,7 +6,6 @@ namespace api.DTOs.Authentication
     public class ChangePasswordDTO
     {
         [Required(ErrorMessage = "Emtpy Password")]
-        [PasswordStrength]
         public required string CurrentPassword { get; set; }
         [PasswordStrength]
         [Required(ErrorMessage = "Emtpy Password")]

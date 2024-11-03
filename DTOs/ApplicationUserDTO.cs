@@ -9,7 +9,7 @@ namespace api.DTOs
         private string? _gender;
         private string? _address;
 
-        [RegularExpression(@"^[a-zA-Z\s]{5,30}$", ErrorMessage = "Invalid format.")]
+        [RegularExpression(@"^[a-zA-Z\s,\u00C0-\u024F\u1E00-\u1EFF]{5,30}$", ErrorMessage = "Invalid format.")]
         public string? FullName
         {
             get => _fullName;

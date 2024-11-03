@@ -17,6 +17,7 @@ namespace api.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<OrderType> OrderTypes { get; set; }
+        public DbSet<RevokedToken> RevokedTokens { get; set; }
         //public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -34,6 +35,11 @@ namespace api.Data
 
             modelBuilder.Entity<OrderDetail>()
               .HasKey(rd => new { rd.OrderId, rd.FoodId });
+
+            modelBuilder.Entity<OrderDetail>()
+                        .HasOne(rd => rd.Order)
+                        .WithMany(r => r.OrderDetails)
+                        .HasForeignKey(rd => rd.OrderId);
         }
     }
 }
