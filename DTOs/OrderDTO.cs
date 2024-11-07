@@ -1,6 +1,6 @@
 ﻿namespace api.DTOs;
 
-public class CartDTO
+public class OrderDTO
 {
     public required string UserId { get; set; }
     public required OrderStatus OrderStatus { get; set; }

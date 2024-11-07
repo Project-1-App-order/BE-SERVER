@@ -2,6 +2,7 @@ using System.Security.Claims;
 using api.Data;
 using api.DTOs;
 using api.Models;
+using api.Services.Functions;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,31 +13,28 @@ namespace api.Controllers
     [Authorize]
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class CartController : ControllerBase
+    public class OrdersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IProductService _productService;
+        private readonly UserManager<ApplicationUser> _userManager; 
 
-        public CartController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,  IProductService productService)
+        public OrdersController(ApplicationDbContext context, IProductService productService, UserManager<ApplicationUser> userManager)
         {
             _context = context;
-            _userManager = userManager;
             _productService = productService;
+            _userManager = userManager;
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCart([FromBody] OrderDTO orderDto)
+        public async Task<IActionResult> CreateOrder([FromBody] OrderDTO orderDto)
         {
-            var existUser =  _context.Orders.FirstOrDefault(x => x.UserId == orderDto.UserId);
-            if (existUser != null) return StatusCode(StatusCodes.Status409Conflict, "User already have cart");
-
             var newOrder = new Order
             {
                 OrderId = Guid.NewGuid().ToString(),
                 UserId = orderDto.UserId,
-                OrderTypeId = "1",
-                OrderStatus = null,
+                OrderTypeId = "2",
+                OrderStatus = orderDto.OrderStatus.ToString(),
                 OrderNote = orderDto.OrderNote,
                 OrderDate = DateTime.Now,
                 CreateAt = DateTime.Now,
@@ -45,18 +43,23 @@ namespace api.Controllers
             await _context.Orders.AddAsync(newOrder);
             return await _context.SaveChangesAsync() > 0 ? StatusCode(StatusCodes.Status200OK, "Success") : StatusCode(StatusCodes.Status500InternalServerError, "Error");
         }
-        
+
         [HttpGet]
-        public async Task<IActionResult> GetCart()
+        public async Task<IActionResult> GetAllOrdersByIdUser()
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (userName == null) return StatusCode(StatusCodes.Status401Unauthorized, "User not found");
             var user = await _userManager.FindByNameAsync(userName);
-            var cart = _productService.GetCartAsync(user.Id, "1");
-            return Ok(cart);
+            var order = _productService.GetCartAsync(user.Id, "2");
+            return Ok(order);
         }
-        
-        
-        
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrdersDetailByOrderId(string orderId)
+        {
+            var orderDetails = await _context.OrderDetails.FindAsync(orderId);
+            return Ok(orderDetails);
+        }
+
     }
 }

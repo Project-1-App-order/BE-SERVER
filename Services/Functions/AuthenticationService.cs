@@ -21,18 +21,18 @@ namespace api.Services.Functions
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
 
         public AuthenticationService(ApplicationDbContext context,
                                      UserManager<ApplicationUser> userManager,
-                                     SignInManager<ApplicationUser> signInManager,
-                                     IConfiguration configuration)
+                                     IConfiguration configuration,
+                                     ITokenService tokenService)
         {
             _context = context;
             _userManager = userManager;
-            _signInManager = signInManager;
             _configuration = configuration;
+            _tokenService = tokenService;
         }
         public async Task<GeneralResponse> ResgisterAsync(RegisterDTO registerDTO)
         {
@@ -65,7 +65,7 @@ namespace api.Services.Functions
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
-                expires: DateTime.UtcNow.AddMinutes(2),
+                expires: DateTime.UtcNow.AddMonths(2),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSiginKey, SecurityAlgorithms.HmacSha256)
             );
@@ -77,7 +77,14 @@ namespace api.Services.Functions
             var email = request.Email.Trim();
             var existingUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (existingUser == null) return new LoginResponse(false, "User doesn't exist", null!);
-
+            
+            
+            var currentTokens = await _context.UserTokens.FirstOrDefaultAsync(x => x.UserId == existingUser.Id);
+            if (currentTokens != null)
+            {
+                await _tokenService.RevokeTokenAsync(currentTokens.Value, DateTime.UtcNow.AddMinutes(2));
+            }
+            
             var isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, request.Password);
             if (!isPasswordValid) return new LoginResponse(false, "Invalid password", null!);
 

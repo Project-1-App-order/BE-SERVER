@@ -8,5 +8,7 @@ namespace api.Services.Interfaces
     {
         Task<Object> GetFoodsAsync(FoodDTO? foodDTO = null);
         Task<List<Category>> GetCategoryAsync();
+        public Task<object> GetCartAsync(string UserId , string OrderTypeId);
+
     }
 }

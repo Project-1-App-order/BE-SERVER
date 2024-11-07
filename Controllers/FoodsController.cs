@@ -25,13 +25,6 @@ namespace api.Controllers
             _imageService = imageService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllFoods()
-        {
-            var result = await _productService.GetFoodsAsync();
-            return Ok(result);
-        }
-
         [HttpPost]
         public async Task<IActionResult> UploadFoodsImages([FromForm] FoodImageDTO foodImageDTO)
         {
@@ -92,35 +85,9 @@ namespace api.Controllers
 
             return Ok(topFoodWithImages);
         }
-        [HttpGet]
-        public async Task<IActionResult> GetFoodsByFoodId(string foodId)
-        {
-            var result = await _productService.GetFoodsAsync(new FoodDTO() { FoodId = foodId });
-            return Ok(result);
-        }
 
         [HttpGet]
-        public async Task<IActionResult> GetFoodsByFoodName(string foodName)
-        {
-            if (string.IsNullOrWhiteSpace(foodName)
-                                          || foodName.Length < 0
-                                          || foodName.Length > 50
-                                          || !System.Text.RegularExpressions.Regex.IsMatch(foodName.Trim(), @"^[a-zA-Z0-9\s]+$"))
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, new Response
-                {
-                    Status = "Error",
-                    StatusMessage = "Invalid format"
-                });
-            }
-            var result = await _productService.GetFoodsAsync(new FoodDTO() { FoodName = foodName.Trim() });
-            return Ok(result);
-        }
-
-      
-
-        [HttpGet]
-        public async Task<IActionResult> FIlterGetFoods([FromQuery]FoodDTO foodDTO)
+        public async Task<IActionResult> FilterGetFoods([FromQuery]FoodDTO foodDTO)
         {
             if (foodDTO.StartPrice.HasValue && !foodDTO.EndPrice.HasValue)
             {
