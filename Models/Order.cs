@@ -11,13 +11,15 @@ namespace api.Models
         public required string UserId { get; set; }
         public required string OrderTypeId { get; set; }
         public required string OrderStatus { get; set; }
+        public DateTime? OrderDate { get; set; }
+        public decimal? OrderTotal { get; set; }
         public string? OrderNote { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
         [ForeignKey("OrderTypeId")]
-        public required OrderType OrderType { get; set; }
+        public  OrderType? OrderType { get; set; }
         [ForeignKey("UserId")]
-        public required ApplicationUser User { get; set; }
+        public  ApplicationUser? User { get; set; }
         public ICollection<OrderDetail>? OrderDetails { get; set; }
     }
 }

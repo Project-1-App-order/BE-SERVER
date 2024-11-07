@@ -15,7 +15,7 @@ namespace api.Models
         [ForeignKey("FoodId")]
         public Food? Food { get; set; }
         [ForeignKey("OrderId")]
-        public required Order Order { get; set; }
+        public  Order? Order { get; set; }
         
     }
 }

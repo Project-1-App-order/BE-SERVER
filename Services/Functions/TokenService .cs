@@ -1,6 +1,7 @@
 ﻿using api.Data;
 using api.Models;
 using api.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Functions
@@ -29,5 +30,8 @@ namespace api.Services.Functions
             _context.RevokedTokens.Add(revokedToken);
             await _context.SaveChangesAsync();
         }
+
+        
+        
     }
 }
