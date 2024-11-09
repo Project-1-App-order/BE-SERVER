@@ -53,7 +53,7 @@ namespace api.Services.Functions
             var result = await _userManager.CreateAsync(newUser, registerDTO.Password.Trim());
             if (result.Succeeded)
             {
-                return new GeneralResponse(true, "Register succesfully", null);
+                return new GeneralResponse(true, "Register succesfully", newUser.Id);
             }
             return new GeneralResponse(false, "Resgister failed", null);
             
