@@ -41,7 +41,8 @@ namespace api.Controllers
                 return StatusCode(StatusCodes.Status409Conflict);
             var existOrderDetail =   _context.OrderDetails.FirstOrDefault(x => x.OrderId == orderDetailDto.OrderId && x.FoodId == orderDetailDto.FoodId);
             if (existOrderDetail == null) return StatusCode(StatusCodes.Status404NotFound);
-            existOrderDetail.Quantity = orderDetailDto.Quantity;
+            
+            existOrderDetail.Quantity +=  orderDetailDto.Quantity;
             existOrderDetail.Note = orderDetailDto.Note;
             return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
                    
@@ -54,6 +55,15 @@ namespace api.Controllers
             if(existOrderDetail == null) return StatusCode(StatusCodes.Status404NotFound);
              _context.OrderDetails.Remove(existOrderDetail);
              return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAllOrderDetailByCartId(string orderId)
+        {
+            var existOrderDetail = _context.OrderDetails.FirstOrDefault(x => x.OrderId == orderId );
+            if(existOrderDetail == null) return StatusCode(StatusCodes.Status404NotFound);
+            _context.OrderDetails.Remove(existOrderDetail);
+            return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
         [HttpGet]

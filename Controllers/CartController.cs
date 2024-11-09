@@ -36,7 +36,7 @@ namespace api.Controllers
                 OrderId = Guid.NewGuid().ToString(),
                 UserId = orderDto.UserId,
                 OrderTypeId = "1",
-                OrderStatus = null,
+                OrderStatus = "",
                 OrderNote = orderDto.OrderNote,
                 OrderDate = DateTime.Now,
                 CreateAt = DateTime.Now,
