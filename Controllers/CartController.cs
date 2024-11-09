@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
 {
-    [Authorize]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class CartController : ControllerBase
@@ -45,7 +44,7 @@ namespace api.Controllers
             await _context.Orders.AddAsync(newOrder);
             return await _context.SaveChangesAsync() > 0 ? StatusCode(StatusCodes.Status200OK, "Success") : StatusCode(StatusCodes.Status500InternalServerError, "Error");
         }
-        
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
