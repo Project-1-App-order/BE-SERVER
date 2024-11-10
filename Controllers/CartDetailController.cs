@@ -77,11 +77,20 @@ namespace api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCartDetailByCartId(string cartId)
         {
-            var orderDetails = await  _context.OrderDetails
+            var orderDetails = await _context.OrderDetails
                 .Where(od => od.OrderId == cartId)
+                .Select(od => new
+                {
+                    od.Food.FoodId,
+                    od.Food.FoodName,
+                    od.Quantity,
+                    od.Note,
+                    Images = od.Food.Images!.Select(img => img.ImageUrl).Distinct().ToList()
+                })
                 .ToListAsync();
 
             return Ok(orderDetails);
+
         }
     }
 }
