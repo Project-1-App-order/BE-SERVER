@@ -3,6 +3,7 @@ using api.DTOs;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -57,20 +58,30 @@ namespace api.Controllers
              return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        
         [HttpDelete]
-        public async Task<IActionResult> DeleteAllOrderDetailByCartId(string orderId)
+        public async Task<IActionResult> DeleteAllOrderDetailByOrderId(string orderId)
         {
-            var existOrderDetail = _context.OrderDetails.FirstOrDefault(x => x.OrderId == orderId );
-            if(existOrderDetail == null) return StatusCode(StatusCodes.Status404NotFound);
-            _context.OrderDetails.Remove(existOrderDetail);
-            return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
+            var orderDetails = _context.OrderDetails.Where(x => x.OrderId == orderId).ToList();
+    
+            if (!orderDetails.Any())
+                return StatusCode(StatusCodes.Status404NotFound);
+
+            _context.OrderDetails.RemoveRange(orderDetails);
+
+            return await _context.SaveChangesAsync() > 0 
+                ? StatusCode(StatusCodes.Status200OK) 
+                : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllCartDetailByCartId(string cartId)
         {
-            var allCartDetail = await  _context.OrderDetails.FindAsync(cartId);
-            return Ok(allCartDetail);
+            var orderDetails = await  _context.OrderDetails
+                .Where(od => od.OrderId == cartId)
+                .ToListAsync();
+
+            return Ok(orderDetails);
         }
     }
 }

@@ -7,6 +7,7 @@ using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -105,7 +106,9 @@ namespace api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrdersDetailByOrderId(string orderId)
         {
-            var orderDetails = await _context.OrderDetails.FindAsync(orderId);
+            var orderDetails = await  _context.OrderDetails
+                .Where(od => od.OrderId == orderId)
+                .ToListAsync();
             return Ok(orderDetails);
         }
 
