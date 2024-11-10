@@ -46,43 +46,46 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddAndDeleteOrderDetail([FromBody] OrderDetailDTO orderDetailDto, string? detailCartIdDelete = null)
-        {
+       public async Task<IActionResult> AddAndDeleteOrderDetail([FromBody] List<OrderDetailDTO> orderDetailDtos, string? detailCartIdDelete = null)
+            {
             // Khởi tạo transaction để đảm bảo tính toàn vẹn của dữ liệu
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Thêm OrderDetail mới
-                var newOrderDetail = new OrderDetail
+                // 1. Thêm các OrderDetail mới từ danh sách
+                foreach (var orderDetailDto in orderDetailDtos)
                 {
-                    OrderId = orderDetailDto.OrderId,
-                    FoodId = orderDetailDto.FoodId,
-                    Quantity = orderDetailDto.Quantity,
-                    Note = orderDetailDto.Note
-                };
+                    var newOrderDetail = new OrderDetail
+                    {
+                        OrderId = orderDetailDto.OrderId,
+                        FoodId = orderDetailDto.FoodId,
+                        Quantity = orderDetailDto.Quantity,
+                        Note = orderDetailDto.Note
+                    };
 
-                await _context.OrderDetails.AddAsync(newOrderDetail);
-                await _context.SaveChangesAsync();
+                    await _context.OrderDetails.AddAsync(newOrderDetail);
+                }
+                // 2. Xóa chi tiết trong giỏ hàng từ bảng OrderDetails và Orders
 
-                // 2. Tìm và xóa chi tiết trong giỏ hàng từ bảng OrderDetails và Orders
-                var cartItem = _context.OrderDetails
-                    .Join(_context.Orders,
-                        od => od.OrderId,
-                        o => o.OrderId,
-                        (od, o) => new { OrderDetails = od, Orders = o })
-                    .FirstOrDefault(c => c.OrderDetails.FoodId == orderDetailDto.FoodId 
-                                         && c.Orders.OrderId == detailCartIdDelete 
-                                         && c.Orders.OrderTypeId == "1");
-
-                if (cartItem != null)
+                if (await _context.SaveChangesAsync() > 0)
                 {
-                    _context.OrderDetails.Remove(cartItem.OrderDetails);
+                    // 2. Xóa các mục trong giỏ hàng dựa trên OrderId đã thêm
+                    var cartItemsToDelete = _context.OrderDetails
+                        .Join(_context.Orders,
+                            od => od.OrderId,
+                            o => o.OrderId,
+                            (od, o) => new { OrderDetails = od, Orders = o })
+                        .Where(c => c.Orders.OrderId == detailCartIdDelete && c.Orders.OrderTypeId == "1")
+                        .Select(c => c.OrderDetails)
+                        .ToList();
+
+                    _context.OrderDetails.RemoveRange(cartItemsToDelete);
                     await _context.SaveChangesAsync();
                 }
-
+                await _context.SaveChangesAsync();
                 // 3. Commit transaction nếu cả hai thao tác đều thành công
                 await transaction.CommitAsync();
-                return StatusCode(StatusCodes.Status200OK, "Order detail added and cart item removed.");
+                return StatusCode(StatusCodes.Status200OK, "Order details added and cart items removed.");
             }
             catch (Exception ex)
             {
@@ -90,7 +93,7 @@ namespace api.Controllers
                 await transaction.RollbackAsync();
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
             }
-        }
+            }
 
 
         [HttpGet]
