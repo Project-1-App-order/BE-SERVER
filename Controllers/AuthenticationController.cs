@@ -52,12 +52,8 @@ namespace api.Controllers
                                   new Response { Status = result.Flag.ToString(), StatusMessage = result.Message });
 
             }
-         
-            return StatusCode(StatusCodes.Status200OK, new Response
-            {
-               Status = result.Flag.ToString(),
-               StatusMessage = result.Message
-            });
+
+            return Ok(new{result.userId});
         }
 
         [HttpPost]

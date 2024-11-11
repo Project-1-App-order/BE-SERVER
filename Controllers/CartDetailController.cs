@@ -3,6 +3,7 @@ using api.DTOs;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -41,7 +42,8 @@ namespace api.Controllers
                 return StatusCode(StatusCodes.Status409Conflict);
             var existOrderDetail =   _context.OrderDetails.FirstOrDefault(x => x.OrderId == orderDetailDto.OrderId && x.FoodId == orderDetailDto.FoodId);
             if (existOrderDetail == null) return StatusCode(StatusCodes.Status404NotFound);
-            existOrderDetail.Quantity = orderDetailDto.Quantity;
+            
+            existOrderDetail.Quantity +=  orderDetailDto.Quantity;
             existOrderDetail.Note = orderDetailDto.Note;
             return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
                    
@@ -56,11 +58,40 @@ namespace api.Controllers
              return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAllOrderDetailByOrderId(string orderId)
+        {
+            var orderDetails = _context.OrderDetails.Where(x => x.OrderId == orderId).ToList();
+    
+            if (!orderDetails.Any())
+                return StatusCode(StatusCodes.Status404NotFound);
+
+            _context.OrderDetails.RemoveRange(orderDetails);
+
+            return await _context.SaveChangesAsync() > 0 
+                ? StatusCode(StatusCodes.Status200OK) 
+                : StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAllCartDetailByCartId(string cartId)
         {
-            var allCartDetail = await  _context.OrderDetails.FindAsync(cartId);
-            return Ok(allCartDetail);
+            var orderDetails = await _context.OrderDetails
+                .Where(od => od.OrderId == cartId)
+                .Select(od => new
+                {
+                    od.Food.FoodId,
+                    od.Food.FoodName,
+                    od.Food.Price,
+                    od.Quantity,
+                    od.Note,
+                    Images = od.Food.Images!.Select(img => img.ImageUrl).Distinct().ToList()
+                })
+                .ToListAsync();
+
+            return Ok(orderDetails);
+
         }
     }
 }
