@@ -83,6 +83,7 @@ namespace api.Controllers
                 {
                     od.Food.FoodId,
                     od.Food.FoodName,
+                    od.Food.Price,
                     od.Quantity,
                     od.Note,
                     Images = od.Food.Images!.Select(img => img.ImageUrl).Distinct().ToList()
