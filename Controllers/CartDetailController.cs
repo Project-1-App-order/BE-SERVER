@@ -89,9 +89,7 @@ namespace api.Controllers
                     Images = od.Food.Images!.Select(img => img.ImageUrl).Distinct().ToList()
                 })
                 .ToListAsync();
-
             return Ok(orderDetails);
-
         }
     }
 }
