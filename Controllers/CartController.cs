@@ -54,8 +54,5 @@ namespace api.Controllers
             var cart = _productService.GetCartAsync(user.Id, "1");
             return Ok(cart);
         }
-        
-        
-        
     }
 }
