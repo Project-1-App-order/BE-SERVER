@@ -6,11 +6,18 @@ pipeline {
     }
 
     stages {
+        stage('Check Docker Compose Version') {
+            steps {
+                script {
+                    sh "docker-compose --version"
+                }
+            }
+        }
         stage('Build and Deploy New Project') {
             steps {
                 script {
                     sh """
-                    
+                    docker-compose down
                     docker-compose up -d --build
                     """
                 }
@@ -18,7 +25,6 @@ pipeline {
         }
     }
     
-
     post {
         always {
             echo 'Pipeline completed!'
