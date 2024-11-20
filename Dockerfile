@@ -1,28 +1,25 @@
-# Sử dụng image chính thức của ASP.NET Core
+#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
 WORKDIR /app
 EXPOSE 8080
+EXPOSE 8081
 
-# Sử dụng image SDK để xây dựng ứng dụng
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["api.csproj", "./"]
-RUN dotnet restore "api.csproj"
+COPY ["api.csproj", "."]
+RUN dotnet restore "./api.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "api.csproj" -c Release -o /app/build
+RUN dotnet build "./api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Giai đoạn publish
 FROM build AS publish
-RUN dotnet publish "api.csproj" -c Release -o /app/publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Giai đoạn chạy ứng dụng
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-# Đặt biến môi trường cho thư mục lưu trữ Data Protection Keys
-ENV ASPNETCORE_ENVIRONMENT=Development
-ENV DataProtectionKeysPath=/root/.aspnet/DataProtection-Keys
-
-# Chạy ứng dụng
 ENTRYPOINT ["dotnet", "api.dll"]
