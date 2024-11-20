@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
-        PROJECT_PATH = '/data'     
     }
 
     stages {
@@ -11,7 +10,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build
+                    docker-compose up -d --build
                     """
                 }
             }
