@@ -20,7 +20,9 @@ pipeline {
                 script {
                     sh """
                     docker-compose down
-                    sh "docker ps"
+                    """
+                    sh """
+                    docker ps
                     docker-compose up -d --build
                     """
                 }
