@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        stage('Check Docker Compose Version') {
+        stage('Check Docker Version') {
             steps {
                 script {
                     sh "docker-compose --version"
@@ -21,6 +21,15 @@ pipeline {
                     sh """
                     docker-compose up -d --build
                     """
+                }
+            }
+        }
+
+        stage('Check Docker Compose Version') {
+            steps {
+                script {
+                    sh "docker ps"
+                    sh "docker ps -a"
                 }
             }
         }
