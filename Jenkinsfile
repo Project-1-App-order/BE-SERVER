@@ -19,7 +19,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker-compose down
+
                     """
                     sh """
                     docker ps
