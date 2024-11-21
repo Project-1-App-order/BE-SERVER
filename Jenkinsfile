@@ -10,6 +10,8 @@ pipeline {
             steps {
                 script {
                     sh "docker-compose --version"
+                    sh "docker ps"
+                    sh "docker ps -a"
                 }
             }
         }
