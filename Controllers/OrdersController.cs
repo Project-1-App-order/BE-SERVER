@@ -42,7 +42,8 @@ namespace api.Controllers
                 UpdateAt = DateTime.Now,
             };
             await _context.Orders.AddAsync(newOrder);
-            return await _context.SaveChangesAsync() > 0 ? StatusCode(StatusCodes.Status200OK, "Success") : StatusCode(StatusCodes.Status500InternalServerError, "Error");
+            _context.SaveChanges();
+            return Ok( new { newOrder.OrderId});
         }
 
         [HttpPost]
