@@ -2,44 +2,41 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_COMPOSE_FILE = 'docker-compose.yml' // Tên file Docker Compose
-        PROJECT_PATH = '/path/to/your/project'     // Đường dẫn nơi project được lưu trên server
+        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
     }
 
     stages {
-        stage('Cleanup Old Project') {
+        stage('Check Docker Version') {
             steps {
                 script {
-                    // Xóa container cũ và volume liên quan
-                    sh "docker-compose -f ${DOCKER_COMPOSE_FILE} down -v"
-                    
-                    // Xóa mã nguồn cũ
-                    sh "rm -rf ${PROJECT_PATH}/*"
+                    sh "echo Waiting... && timeout 3s cat"
+                    sh "docker-compose --version"
+                    sh "docker ps"
+                    sh "docker ps -a"
                 }
             }
         }
-
-        stage('Checkout New Code') {
+        stage('Test') {
             steps {
                 script {
-                    // Lấy mã nguồn mới từ repository
-                    git branch: 'main', url: 'https://github.com/Project-1-App-order/BE-SERVER.git'
+                    sh "echo Waiting... && timeout 3s cat"
+                    echo "Running environment tests..."
                 }
             }
         }
-
         stage('Build and Deploy New Project') {
             steps {
                 script {
-                    // Build lại và chạy Docker Compose
+                    sh "echo Waiting... && timeout 3s cat"
                     sh """
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build
+                    docker ps
+                    docker-compose up -d --build
                     """
                 }
             }
         }
     }
-
+    
     post {
         always {
             echo 'Pipeline completed!'

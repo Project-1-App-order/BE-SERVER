@@ -16,6 +16,8 @@ using api.Middlewares;
 
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
+
 var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(
@@ -169,5 +171,7 @@ app.UseMiddleware<TokenRevocationMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.Services.GetRequiredService<ApplicationDbContext>().Database.Migrate();
 
 app.Run();
