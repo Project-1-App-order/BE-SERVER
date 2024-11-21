@@ -13,7 +13,6 @@ pipeline {
                     sh "docker-compose --version"
                     sh "docker ps"
                     sh "docker ps -a"
-                    
                 }
             }
         }
