@@ -16,7 +16,7 @@ services:
     volumes:
       - ./logs:/app/logs
     restart: unless-stopped
-
+    
   mysql:
     image: mysql:8.0
     container_name: mysql
@@ -30,6 +30,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     restart: unless-stopped
+
 
 volumes:
   db_data:
