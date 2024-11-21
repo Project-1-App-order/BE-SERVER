@@ -15,25 +15,20 @@ pipeline {
                 }
             }
         }
+        stage('Test') {
+            steps {
+                script {
+                    echo "Running environment tests..."
+                }
+            }
+        }
         stage('Build and Deploy New Project') {
             steps {
                 script {
                     sh """
-
-                    """
-                    sh """
                     docker ps
                     docker-compose up -d --build
                     """
-                }
-            }
-        }
-
-        stage('Check Docker Compose Version') {
-            steps {
-                script {
-                    sh "docker ps"
-                    sh "docker ps -a"
                 }
             }
         }
