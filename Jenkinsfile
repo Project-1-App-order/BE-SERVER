@@ -11,8 +11,6 @@ pipeline {
                 script {
                     sh "echo Waiting... && timeout 3s cat"
                     sh "docker-compose --version"
-                    sh "docker ps"
-                    sh "docker ps -a"
                 }
             }
         }
@@ -29,7 +27,6 @@ pipeline {
                 script {
                     sh "echo Waiting... && timeout 3s cat"
                     sh """
-                    docker ps
                     docker-compose up -d --build
                     """
                 }
