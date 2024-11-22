@@ -40,10 +40,11 @@ namespace api.Services.Functions
                                     f.FoodId,
                                     f.FoodName,
                                     f.Price,
+                                    f.Status,
                                     f.Description,
                                     FoodImages = _context.FoodImages
                                                         .Where(img => img.FoodId == f.FoodId)
-                                                        .Select(img => img.ImageUrl)
+                                                        .Select(img => img.ImageUrl)    
                                                         .ToList()
                                 });
 

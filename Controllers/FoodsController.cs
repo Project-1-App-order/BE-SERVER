@@ -69,13 +69,14 @@ namespace api.Controllers
                       o => o.OrderId,
                       (fo, o) => new { fo.Food, Order = o, fo.OrderDetail })
                 .Where(result => result.Order.OrderTypeId == "2")
-                .GroupBy(result => new { result.Food.FoodId, result.Food.FoodName, result.Food.Price, result.Food.Description })
+                .GroupBy(result => new { result.Food.FoodId, result.Food.FoodName, result.Food.Price, result.Food.Description, result.Food.Status })
                 .OrderByDescending(x => x.Sum(x => x.OrderDetail.Quantity))
                 .Select(g => new
                 {
                     g.Key.FoodId,
                     g.Key.FoodName,
                     g.Key.Price,
+                    g.Key.Status,
                     g.Key.Description,
                     FoodImages = g.SelectMany(x => x.Food.Images!.Select(img => img.ImageUrl)).Distinct().ToList()
                 })
