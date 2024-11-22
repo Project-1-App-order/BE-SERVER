@@ -103,7 +103,7 @@ namespace api.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateFoodImages([FromBody] UpdateFoodDTO updateFoodDto)
+        public async Task<IActionResult> UpdateFoods([FromBody] UpdateFoodDTO updateFoodDto)
         {
             var existFood = _context.Foods.FirstOrDefault(f => f.FoodId == updateFoodDto.FoodId);
             if (existFood == null) return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Food not found" });
