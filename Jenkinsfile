@@ -19,6 +19,7 @@ pipeline {
                 script {
                     sh "echo Waiting... && timeout 3s cat"
                     echo "Running environment tests..."
+                    
                 }
             }
         }
