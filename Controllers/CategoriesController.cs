@@ -67,7 +67,7 @@ namespace api.Controllers
             var existingCategory =  _context.Categories.FirstOrDefault(x => x.CategoryId ==updateCategoryDTO.CategoryId);
             if (existingCategory == null) return NotFound("Category not found.");
             existingCategory.CategoryName = updateCategoryDTO.CategoryName;
-            return Ok();
+            return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 }
