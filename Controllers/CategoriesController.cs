@@ -6,6 +6,7 @@ using api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using api.Responses;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -64,10 +65,22 @@ namespace api.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateCategory([FromBody] UpdateCategoryDTO updateCategoryDTO)
         {
-            var existingCategory =  _context.Categories.FirstOrDefault(x => x.CategoryId ==updateCategoryDTO.CategoryId);
-            if (existingCategory == null) return NotFound("Category not found.");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState); // Kiểm tra dữ liệu đầu vào
+
+            var existingCategory = await _context.Categories
+                .FirstOrDefaultAsync(x => x.CategoryId == updateCategoryDTO.CategoryId); // Truy vấn bất đồng bộ
+            if (existingCategory == null)
+                return NotFound("Category not found."); // Xử lý khi không tìm thấy
+
             existingCategory.CategoryName = updateCategoryDTO.CategoryName;
-            return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
+
+            var result = await _context.SaveChangesAsync() > 0;
+            if (result)
+                return Ok("Category updated successfully."); // Trả về 200 khi thành công
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to save changes."); // Ghi lỗi
         }
+
     }
 }
