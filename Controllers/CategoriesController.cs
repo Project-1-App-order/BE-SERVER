@@ -60,5 +60,14 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
             return StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", StatusMessage = "Add category sucess" });
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateCategory([FromBody] UpdateCategoryDTO updateCategoryDTO)
+        {
+            var existingCategory =  _context.Categories.FirstOrDefault(x => x.CategoryId ==updateCategoryDTO.CategoryId);
+            if (existingCategory == null) return NotFound("Category not found.");
+            existingCategory.CategoryName = updateCategoryDTO.CategoryName;
+            return Ok();
+        }
     }
 }
