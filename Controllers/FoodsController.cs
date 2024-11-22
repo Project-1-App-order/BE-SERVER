@@ -101,5 +101,15 @@ namespace api.Controllers
             var result = await _productService.GetFoodsAsync(foodDTO);
             return Ok(result);
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateFoodImages([FromBody] UpdateFoodDTO updateFoodDto)
+        {
+            var existFood = _context.Foods.FirstOrDefault(f => f.FoodId == updateFoodDto.FoodId);
+            if (existFood == null) return StatusCode(StatusCodes.Status400BadRequest, new Response { Status = "Error", StatusMessage = "Food not found" });
+            existFood.FoodName = updateFoodDto.Name;
+            existFood.Description = updateFoodDto.Description;
+            return await _context.SaveChangesAsync()  > 0 ?  StatusCode(StatusCodes.Status201Created) : StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 }
